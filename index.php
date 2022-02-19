@@ -1,5 +1,5 @@
 <?php 
-
+session_start();
 require_once("vendor/autoload.php");
 
 use \Slim\Slim;
@@ -21,6 +21,8 @@ $app->get('/', function() {
 
 $app->get('/admin', function() {
     
+   User::verifyLogin();
+
    $page = new PageAdmin ();
 
    $page->setTpl("index");
@@ -56,6 +58,54 @@ $app->get('/admin/logout', function(){
    exit;
 });
 
+$app->get("/admin/users",function(){
+
+   User::verifyLogin();
+
+   $users = User::listAll();
+
+   $page = new PageAdmin();
+
+   $page->setTpl("users");
+
+});
+
+$app->get("/admin/users/create",function(){
+ 
+   User::verifyLogin();
+
+   $page = new PageAdmin();
+
+   $page->setTpl("users-create");
+
+});
+
+$app->get("/admin/users/:iduser",function($iduser){
+
+   User::verifyLogin();
+
+   $page = new PageAdmin();
+
+   $page->setTpl("users-update");
+
+});
+
+$app->post("/admin/user/create",function(){
+
+   User::verifyLogin();
+
+});
+
+$app->post("/admin/user/:iduser",function($iduser){
+
+   User::verifyLogin();
+
+});
+
+$app->delete("/admin/user/create",function(){
+
+   User::verifyLogin();
+});
 $app->run();
 
  ?>

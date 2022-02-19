@@ -1,74 +1,64 @@
 <?php
 
-namespace Hcode\Model; // onde a classe está é o namespace dela
+    namespace Hcode\Model;
 
-use \Hcode\DB\Sql;
-use \Hcode\Model;
-use \Hcode\Mailer;
+    use \Hcode\DB\Sql;
+    use \Hcode\Model;
 
-class User extends Model { // Classe model sabe fazer os geters e seters
+    class User extends Model {
 
-  Const SESSION = "User";
-  Const SECRET = "HcodePhp7_Secret";
+        const SESSION = "User";
+        const SECRET = "CursoPHP7_Secret";
 
-  public static function login($login, $password)
-  {
+        public static function login($login, $password) {
 
-    $sql = new Sql();
+            $sql = new Sql();
 
-    $results = $sql->select("SELECT * FROM tb_users WHERE deslogin = :LOGIN", array( //Evitar SQL Injection :LOGIN
-      ":LOGIN"=>$login //fazer o bind dos nosso parametros vai ser a variável login do nosso parâmetro
-    ));
+            $results = $sql->select("SELECT * FROM tb_users WHERE deslogin = :CADASTRO", array(
+                ":CADASTRO"=>$login
+            ));
 
-    if (count($results) === 0) //se não retornou nenhum resultado estourar uma exceção.
-    {
-      throw new \Exception("Usuário inexistente ou senha inválida."); // colocar contra barra localizar exceções no diretório php principal pois não está dentro de Model.      
-    }
+            if (count($results) === 0) {
 
-    $data = $results[0];
+                throw new \Exception("Usuario inexistente ou senha ivalida");   
 
-    if (password_verify($password, $data["despassword"]) === true) //está função retorna verdadeiro ou falso para senha.
-    {
+            }
 
-      $user = new User(); // se verdadeiro vamos criar um objeto deste usuário.
+            $data = $results[0];
 
-      $user->setData($data);
+            if (password_verify($password, $data["despassword"]) === true) {
 
-      $_SESSION[User::SESSION] = $user->getValues();
+                $user = new User();
 
-      return $user;
-     
-    } else{
-      throw new \Exception("Usuário inexistente ou senha inválida.");
-    }
+                $user->setData($data);
 
-  }
+                $_SESSION[User::SESSION] = $user->getValues();
 
-  public static function verifyLogin($inadmin = true)
-  {
+                return $user;
+                
+            } else {
 
-    if (
-      !isset($_SESSION[User::SESSION])
-      ||
-      !$_SESSION[User::SESSION]
-      ||
-      !(int)$_SESSION[User::SESSION]["iduser"] > 0
-      ||
-      (bool)$_SESSION[user::SESSION]["inadmin"] !== $inadmin
-    ){
+                throw new \Exception("Usuario inexistente ou senha ivalida");
 
-      header("Location: /admin/login/");
-      exit;
+            }
 
-    }
+        }
 
-  }
+        public static function verifyLogin($inAdmin = true) {
 
-  public static function logout()
-  {
+            if (!isset($_SESSION[User::SESSION]) || !$_SESSION[User::SESSION] || !(int)$_SESSION[User::SESSION]["iduser"] > 0 || (bool)$_SESSION[User::SESSION]["inadmin"] !== $inAdmin) {
+                header("Location: /admin/login");
+                exit;
+            }
+        }
 
-      $_SESSION[User::SESSION] = NULL;
+        public static function logout() {
+            $_SESSION[User::SESSION] = null;
+        }
 
-  }
+        public static function listAll() {
+            $sql = new Sql;
+            return  $sql->select("SELECT * FROM tb_users a INNER JOIN tb_persons b USING(idperson) ORDER BY b.desperson");
+        }
 }
 ?>
