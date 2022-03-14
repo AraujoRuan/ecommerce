@@ -50,7 +50,9 @@
 
     });
 
-    $app->post("/admin/products/:idproduct", function($idproduct){
+    $app->post("/admin/products/:idproduct", function($idproduct)
+    {
+    
         User::VerifyLogin();
 
         $product = new Product();
