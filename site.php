@@ -1,17 +1,19 @@
-<?php
-    use \Hcode\Page;
-	use \Hcode\Model\Category;
-	use \Hcode\Model\Product;
-//Rota homepage site
-$app->get('/', function() { // Define a rota
+<?php 
 
-	$products = Product::ListAll();
+use \Hcode\Page;
+use \Hcode\Model\Product;
+use \Hcode\Model\Category;
 
-	$page = new Page();		//Cria uma pagina de acordo com o conteúdo indicado
+$app->get('/', function() {
+
+	$products = Product::listAll();
+
+	$page = new Page();
 
 	$page->setTpl("index", [
 		'products'=>Product::checkList($products)
 	]);
+
 });
 
 $app->get("/categories/:idcategory", function($idcategory){
@@ -35,11 +37,27 @@ $app->get("/categories/:idcategory", function($idcategory){
 
 	$page = new Page();
 
-	$page->setTpl("category", array(
+	$page->setTpl("category", [
 		'category'=>$category->getValues(),
 		'products'=>$pagination["data"],
 		'pages'=>$pages
-	));
+	]);
+
+});
+
+$app->get("/products/:desurl", function($desurl){
+
+	$product = new Product();
+
+	$product->getFromURL($desurl);
+
+	$page = new Page();
+
+	$page->setTpl("product-detail", [
+		'product'=>$product->getValues(),
+		'categories'=>$product->getCategories()
+	]);
+
 });
 
 ?>
