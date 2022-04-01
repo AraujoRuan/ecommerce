@@ -63,7 +63,8 @@
 
         $product->save();
 
-        $product->setPhoto($_FILES ["file"]);
+        if ($_FILES ["file"]['size']>0)
+            $product->setPhoto($_FILES ["file"]);
 
         header("Location: /admin/products");
         exit;

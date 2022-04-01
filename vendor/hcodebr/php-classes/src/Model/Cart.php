@@ -15,14 +15,16 @@ class Cart extends Model {
 	{
 
 		$cart = new Cart();
+		
 
 		if (isset($_SESSION[Cart::SESSION]) && (int)$_SESSION[Cart::SESSION]['idcart'] > 0) {
-
+		
 			$cart->get((int)$_SESSION[Cart::SESSION]['idcart']);
 
 		} else {
 
 			$cart->getFromSessionID();
+
 
 			if (!(int)$cart->getidcart() > 0) {
 
@@ -177,7 +179,7 @@ class Cart extends Model {
 		$sql = new Sql();
 
 		$results = $sql->select("
-			SELECT SUM(vlprice) AS vlprice, SUM(vlwidth) AS vlwidth, SUM(vlheight) AS vlheight, SUM(vllength) AS vllength, SUM(vlweight) AS vlweight, COUNT(*) AS nrqtd
+			SELECT SUM(vlprice) AS vlprice, MAX(vlwidth) AS vlwidth, SUM(vlheight) AS vlheight, MAX(vllength) AS vllength, SUM(vlweight) AS vlweight, COUNT(*) AS nrqtd
 			FROM tb_products a
 			INNER JOIN tb_cartsproducts b ON a.idproduct = b.idproduct
 			WHERE b.idcart = :idcart AND dtremoved IS NULL;
@@ -195,11 +197,12 @@ class Cart extends Model {
 
 	public function setFreight($nrzipcode)
 	{
+	
 
 		$nrzipcode = str_replace('-', '', $nrzipcode);
-
+		
 		$totals = $this->getProductsTotals();
-
+		
 		if ($totals['nrqtd'] > 0) {
 
 			if ($totals['vlheight'] < 2) $totals['vlheight'] = 2;
@@ -208,40 +211,35 @@ class Cart extends Model {
 			$qs = http_build_query([
 				'nCdEmpresa'=>'',
 				'sDsSenha'=>'',
-				'nCdServico'=>'40010',
+				'nCdServico'=>'04014',
 				'sCepOrigem'=>'09853120',
 				'sCepDestino'=>$nrzipcode,
-				'nVlPeso'=>$totals['vlweight'],
+				'nVlPeso'=>(int)$totals['vlweight'],
 				'nCdFormato'=>'1',
-				'nVlComprimento'=>$totals['vllength'],
-				'nVlAltura'=>$totals['vlheight'],
-				'nVlLargura'=>$totals['vlwidth'],
+				'nVlComprimento'=>(int)$totals['vllength'],
+				'nVlAltura'=>(int)$totals['vlheight'],
+				'nVlLargura'=>(int)$totals['vlwidth'],
 				'nVlDiametro'=>'0',
 				'sCdMaoPropria'=>'S',
 				'nVlValorDeclarado'=>$totals['vlprice'],
 				'sCdAvisoRecebimento'=>'S'
 			]);
 
+			
 			$xml = simplexml_load_file("http://ws.correios.com.br/calculador/CalcPrecoPrazo.asmx/CalcPrecoPrazo?".$qs);
 
-			$result = $xml->Servicos->cServico;
-
+			$result = (object)$xml->Servicos->cServico;
+		
 			if ($result->MsgErro != '') {
-
 				Cart::setMsgError($result->MsgErro);
-
 			} else {
-
 				Cart::clearMsgError();
-
+				$this->setnrdays($result->PrazoEntrega);
+				$this->setvlfreight(Cart::formatValueToDecimal($result->Valor));
 			}
-
-			$this->setnrdays($result->PrazoEntrega);
-			$this->setvlfreight(Cart::formatValueToDecimal($result->Valor));
+			
 			$this->setdeszipcode($nrzipcode);
-
 			$this->save();
-
 			return $result;
 
 		} else {
@@ -288,7 +286,7 @@ class Cart extends Model {
 	public function updateFreight()
 	{
 
-		if ($this->getdeszipcode() != '') {
+		if ($this->getdeszipcode() != '' && $this->getdeszipcode() !='0') {
 
 			$this->setFreight($this->getdeszipcode());
 
