@@ -434,7 +434,7 @@ class User extends Model {
 			INNER JOIN tb_ordersstatus b USING(idstatus) 
 			INNER JOIN tb_carts c USING(idcart)
 			INNER JOIN tb_users d ON d.iduser = a.iduser
-			INNER JOIN tb_addresses e USING(idaddress)
+			INNER JOIN tb_addresses e on e.idaddress = a.idaddress
 			INNER JOIN tb_persons f ON f.idperson = d.idperson
 			WHERE a.iduser = :iduser
 		", [
